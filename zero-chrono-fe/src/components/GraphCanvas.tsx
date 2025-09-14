@@ -11,8 +11,6 @@ import {
   forceManyBody,
   forceCenter,
   forceCollide,
-  D3DragEvent,
-  D3ZoomEvent,
 } from "d3";
 
 /* -------------------- Types -------------------- */
@@ -46,6 +44,7 @@ export interface GraphNode {
   id: string;
   type: NodeType;
   label: string;
+  body?: string;
   degree?: number;
   x?: number;
   y?: number;
@@ -175,6 +174,11 @@ export function GraphCanvas({
   onSelect?: (payload: { node?: GraphNode; edge?: GraphEdge }) => void;
 }) {
   const [serverData, setServerData] = React.useState<GraphData | null>(null);
+  const [hovered, setHovered] = React.useState<{
+    node: GraphNode;
+    x: number;
+    y: number;
+  } | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const svgRef = React.useRef<SVGSVGElement>(null);
   const simulationRef = React.useRef<ReturnType<typeof forceSimulation> | null>(null);
@@ -299,11 +303,11 @@ export function GraphCanvas({
         event.stopPropagation();
         onSelect?.({ edge: d });
       })
-      .on("mouseenter", function(this: any) {
-        select(this as any).attr("stroke-opacity", 1);
+      .on("mouseenter", (event: any) => {
+        select(event.currentTarget as any).attr("stroke-opacity", 1);
       })
-      .on("mouseleave", function(this: any) {
-        select(this as any).attr("stroke-opacity", 0.7);
+      .on("mouseleave", (event: any) => {
+        select(event.currentTarget as any).attr("stroke-opacity", 0.7);
       });
 
     // Create nodes
@@ -322,19 +326,30 @@ export function GraphCanvas({
         event.stopPropagation();
         onSelect?.({ node: d });
       })
-      .on("mouseenter", function(this: any, event: any, d: GraphNode) {
-        select(this as any)
+      .on("mouseenter", (event: any, d: GraphNode) => {
+        select(event.currentTarget as any)
           .transition()
           .duration(150)
           .attr("r", nodeRadius(d.type, d.degree) + 3)
           .attr("stroke-width", 3);
+        const rect = container.getBoundingClientRect();
+        setHovered({ node: d, x: event.clientX - rect.left, y: event.clientY - rect.top });
       })
-      .on("mouseleave", function(this: any, event: any, d: GraphNode) {
-        select(this as any)
+      .on("mousemove", (event: any, d: GraphNode) => {
+        const rect = container.getBoundingClientRect();
+        setHovered((prev) => {
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          return prev && prev.node.id === d.id ? { ...prev, x, y } : { node: d, x, y };
+        });
+      })
+      .on("mouseleave", (event: any, d: GraphNode) => {
+        select(event.currentTarget as any)
           .transition()
           .duration(150)
           .attr("r", nodeRadius(d.type, d.degree))
           .attr("stroke-width", 2);
+        setHovered(null);
       });
 
     // Create labels
@@ -378,30 +393,30 @@ export function GraphCanvas({
     simulationRef.current = simulation;
 
     // Set up drag behavior
-    const dragBehavior = d3drag<SVGCircleElement, GraphNode>()
-      .on("start", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
+    const dragBehavior = d3drag()
+      .on("start", (event: any, d: GraphNode) => {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
-        select(this).style("cursor", "grabbing");
+        select(event.currentTarget as any).style("cursor", "grabbing");
       })
-      .on("drag", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
+      .on("drag", (event: any, d: GraphNode) => {
         d.fx = event.x;
         d.fy = event.y;
       })
-      .on("end", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
+      .on("end", (event: any, d: GraphNode) => {
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
-        select(this).style("cursor", "grab");
+        select(event.currentTarget as any).style("cursor", "grab");
       });
 
     nodes.call(dragBehavior as any);
 
     // Set up zoom behavior
-    const zoomBehavior = d3zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = d3zoom()
       .scaleExtent([0.3, 3])
-      .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+      .on("zoom", (event: any) => {
         const transform = event.transform;
         transformRef.current = transform;
         mainGroup.attr("transform", transform.toString());
@@ -456,7 +471,7 @@ export function GraphCanvas({
   return (
     <div
       ref={containerRef}
-      className="w-full h-[600px] rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-br from-zinc-50/50 to-white/50 dark:from-zinc-900/50 dark:to-zinc-800/50 backdrop-blur-sm shadow-sm overflow-hidden"
+      className="relative w-full h-[600px] rounded-xl border border-zinc-200/50 dark:border-zinc-700/50 bg-gradient-to-br from-zinc-50/50 to-white/50 dark:from-zinc-900/50 dark:to-zinc-800/50 backdrop-blur-sm shadow-sm overflow-hidden"
       style={{ 
         minHeight: "600px",
         contain: "layout style paint"
@@ -468,6 +483,24 @@ export function GraphCanvas({
         role="img"
         aria-label="Interactive Knowledge Graph"
       />
+      {hovered && (
+        <div
+          className="pointer-events-none absolute z-20 max-w-xs translate-x-3 translate-y-3 rounded-md border border-zinc-200/70 bg-white/95 p-3 text-xs shadow-lg backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/90"
+          style={{ left: hovered.x, top: hovered.y }}
+          role="dialog"
+          aria-live="polite"
+        >
+          <div className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {hovered.node.label}
+          </div>
+          <div className="mb-2 text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            {hovered.node.type}
+          </div>
+          <div className="whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+            {hovered.node.body ?? "No additional details available."}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

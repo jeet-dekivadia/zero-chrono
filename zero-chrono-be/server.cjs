@@ -484,7 +484,32 @@ app.get("/graph", async (req, res) => {
     }
     console.log("[DEBUG] Graph links:", data.Links);
     const links = Array.isArray(data.Links) ? data.Links : [];
+    const rawNodes = Array.isArray(data.Nodes) ? data.Nodes : [];
+    const labelToNode = new Map();
+    try {
+      rawNodes.forEach((n) => {
+        if (!n || typeof n !== "object") return;
+        const titleLc = String(n.title || "").trim().toLowerCase();
+        if (titleLc) labelToNode.set(titleLc, n);
+      });
+    } catch (_) {}
     const nodesMap = new Map();
+    // Pre-populate with all nodes so every node includes its body/tags in the response
+    try {
+      rawNodes.forEach((n) => {
+        if (!n || typeof n !== "object") return;
+        const label = String(n.title || "").trim();
+        if (!label) return;
+        const tags = String(n.tags || "").trim();
+        const type = nodeTypeFrom(tags || "");
+        const id = `${type.toLowerCase()}:${slugify(label)}`;
+        if (nodesMap.has(id)) return;
+        const nodeObj = { id, type, label };
+        if (n.body != null) nodeObj.body = String(n.body);
+        if (tags) nodeObj.tags = String(tags);
+        nodesMap.set(id, nodeObj);
+      });
+    } catch (_) {}
     const edges = [];
 
     links.forEach((link, idx) => {
@@ -497,8 +522,20 @@ app.get("/graph", async (req, res) => {
       const tgtType = nodeTypeFrom(tgtTypeRaw);
       const srcId = `${srcType.toLowerCase()}:${slugify(srcLabel)}`;
       const tgtId = `${tgtType.toLowerCase()}:${slugify(tgtLabel)}`;
-      if (!nodesMap.has(srcId)) nodesMap.set(srcId, { id: srcId, type: srcType, label: srcLabel });
-      if (!nodesMap.has(tgtId)) nodesMap.set(tgtId, { id: tgtId, type: tgtType, label: tgtLabel });
+      if (!nodesMap.has(srcId)) {
+        const info = labelToNode.get(srcLabel.toLowerCase());
+        const nodeObj = { id: srcId, type: srcType, label: srcLabel };
+        if (info && info.body) nodeObj.body = String(info.body);
+        if (info && info.tags) nodeObj.tags = String(info.tags);
+        nodesMap.set(srcId, nodeObj);
+      }
+      if (!nodesMap.has(tgtId)) {
+        const info = labelToNode.get(tgtLabel.toLowerCase());
+        const nodeObj = { id: tgtId, type: tgtType, label: tgtLabel };
+        if (info && info.body) nodeObj.body = String(info.body);
+        if (info && info.tags) nodeObj.tags = String(info.tags);
+        nodesMap.set(tgtId, nodeObj);
+      }
       const edgeType = edgeTypeFrom(srcTypeRaw, tgtTypeRaw);
       const rawVal = link.value != null ? link.value : link.confidence;
       let confidence = Number(rawVal);
