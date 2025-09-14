@@ -11,6 +11,8 @@ import {
   forceManyBody,
   forceCenter,
   forceCollide,
+  D3DragEvent,
+  D3ZoomEvent,
 } from "d3";
 
 /* -------------------- Types -------------------- */
@@ -376,39 +378,39 @@ export function GraphCanvas({
     simulationRef.current = simulation;
 
     // Set up drag behavior
-    const dragBehavior = d3drag()
-      .on("start", (event: any, d: GraphNode) => {
+    const dragBehavior = d3drag<SVGCircleElement, GraphNode>()
+      .on("start", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
-        select(event.sourceEvent.target as any).style("cursor", "grabbing");
+        select(this).style("cursor", "grabbing");
       })
-      .on("drag", (event: any, d: GraphNode) => {
+      .on("drag", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
         d.fx = event.x;
         d.fy = event.y;
       })
-      .on("end", (event: any, d: GraphNode) => {
+      .on("end", function(event: D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) {
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
-        select(event.sourceEvent.target as any).style("cursor", "grab");
+        select(this).style("cursor", "grab");
       });
 
-    nodes.call(dragBehavior);
+    nodes.call(dragBehavior as any);
 
     // Set up zoom behavior
-    const zoomBehavior = d3zoom()
+    const zoomBehavior = d3zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.3, 3])
-      .on("zoom", (event: any) => {
+      .on("zoom", (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
         const transform = event.transform;
         transformRef.current = transform;
         mainGroup.attr("transform", transform.toString());
         
         // Update label visibility based on zoom level
-        labels.attr("opacity", (d: GraphNode) => labelVisible(transform.k, d.degree) ? 1 : 0 as any);
+        labels.attr("opacity", (d: GraphNode) => labelVisible(transform.k, d.degree) ? 1 : 0);
       });
 
-    svgSelection.call(zoomBehavior);
+    svgSelection.call(zoomBehavior as any);
 
     // Simulation tick handler
     simulation.on("tick", () => {
