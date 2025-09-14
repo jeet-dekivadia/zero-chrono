@@ -11,8 +11,6 @@ import {
   forceManyBody,
   forceCenter,
   forceCollide,
-  type SimulationNodeDatum,
-  type ZoomTransform,
 } from "d3";
 
 /* -------------------- Types -------------------- */
@@ -42,11 +40,17 @@ type EdgeType =
 
 type Severity = "low" | "medium" | "high";
 
-export interface GraphNode extends SimulationNodeDatum {
+export interface GraphNode {
   id: string;
   type: NodeType;
   label: string;
   degree?: number;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number | null;
+  fy?: number | null;
 }
 
 export interface GraphEdge {
@@ -168,34 +172,60 @@ export function GraphCanvas({
   data?: GraphData;
   onSelect?: (payload: { node?: GraphNode; edge?: GraphEdge }) => void;
 }) {
+  const [serverData, setServerData] = React.useState<GraphData | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const svgRef = React.useRef<SVGSVGElement>(null);
   const simulationRef = React.useRef<ReturnType<typeof forceSimulation> | null>(null);
-  const transformRef = React.useRef<ZoomTransform>(zoomIdentity);
+  const transformRef = React.useRef<any>(zoomIdentity as any);
   
   // Stable graph data to prevent unnecessary re-renders
   const graphData = React.useMemo(() => {
+    const effective = serverData ?? data;
     const degreeMap: Record<string, number> = {};
-    data.edges.forEach((e) => {
+    effective.edges.forEach((e) => {
       degreeMap[e.source] = (degreeMap[e.source] || 0) + 1;
       degreeMap[e.target] = (degreeMap[e.target] || 0) + 1;
     });
 
-    const nodes = data.nodes.map((n) => ({
+    const nodes = effective.nodes.map((n) => ({
       ...n,
       degree: degreeMap[n.id] || 0,
     }));
 
-    const edges = data.edges.map((e, i) => ({
+    const edges = effective.edges.map((e, i) => ({
       id: e.id ?? `edge-${i}`,
       ...e,
     }));
 
     return { nodes, edges };
-  }, [data]);
+  }, [data, serverData]);
+
+  // Try to fetch from backend if available (no auth; dev only)
+  React.useEffect(() => {
+    let aborted = false;
+    const controller = new AbortController();
+    async function fetchGraph() {
+      try {
+        const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+        const resp = await fetch(`${base}/graph`, { signal: controller.signal });
+        if (!resp.ok) return;
+        const json = (await resp.json()) as GraphData;
+        if (!aborted && json && Array.isArray(json.nodes) && Array.isArray(json.edges)) {
+          setServerData(json);
+        }
+      } catch (_) {
+        // silent fail in demo mode
+      }
+    }
+    fetchGraph();
+    return () => {
+      aborted = true;
+      controller.abort();
+    };
+  }, []);
 
   // Debounced resize handler
-  const resizeTimeoutRef = React.useRef<NodeJS.Timeout>();
+  const resizeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   
   React.useEffect(() => {
     const container = containerRef.current;
@@ -258,20 +288,20 @@ export function GraphCanvas({
       .selectAll("line")
       .data(graphData.edges)
       .join("line")
-      .attr("stroke", (d) => edgeColor(d))
-      .attr("stroke-width", (d) => edgeWidth(d.confidence))
+      .attr("stroke", (d: any) => edgeColor(d))
+      .attr("stroke-width", (d: any) => edgeWidth(d.confidence))
       .attr("stroke-opacity", 0.7)
       .attr("marker-end", "url(#arrowhead)")
       .style("cursor", "pointer")
-      .on("click", (event, d) => {
+      .on("click", (event: any, d: any) => {
         event.stopPropagation();
         onSelect?.({ edge: d });
       })
-      .on("mouseenter", function() {
-        select(this).attr("stroke-opacity", 1);
+      .on("mouseenter", function(this: any) {
+        select(this as any).attr("stroke-opacity", 1);
       })
-      .on("mouseleave", function() {
-        select(this).attr("stroke-opacity", 0.7);
+      .on("mouseleave", function(this: any) {
+        select(this as any).attr("stroke-opacity", 0.7);
       });
 
     // Create nodes
@@ -280,25 +310,25 @@ export function GraphCanvas({
       .selectAll("circle")
       .data(graphData.nodes)
       .join("circle")
-      .attr("r", (d) => nodeRadius(d.type, d.degree))
-      .attr("fill", (d) => nodeColor(d.type))
+      .attr("r", (d: GraphNode) => nodeRadius(d.type, d.degree))
+      .attr("fill", (d: GraphNode) => nodeColor(d.type))
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
       .style("filter", "url(#nodeGradient)")
       .style("cursor", "grab")
-      .on("click", (event, d) => {
+      .on("click", (event: any, d: GraphNode) => {
         event.stopPropagation();
         onSelect?.({ node: d });
       })
-      .on("mouseenter", function(event, d) {
-        select(this)
+      .on("mouseenter", function(this: any, event: any, d: GraphNode) {
+        select(this as any)
           .transition()
           .duration(150)
           .attr("r", nodeRadius(d.type, d.degree) + 3)
           .attr("stroke-width", 3);
       })
-      .on("mouseleave", function(event, d) {
-        select(this)
+      .on("mouseleave", function(this: any, event: any, d: GraphNode) {
+        select(this as any)
           .transition()
           .duration(150)
           .attr("r", nodeRadius(d.type, d.degree))
@@ -311,7 +341,7 @@ export function GraphCanvas({
       .selectAll("text")
       .data(graphData.nodes)
       .join("text")
-      .text((d) => d.label)
+      .text((d: GraphNode) => d.label)
       .attr("font-size", 11)
       .attr("font-family", "ui-sans-serif, system-ui, sans-serif")
       .attr("font-weight", "500")
@@ -327,10 +357,10 @@ export function GraphCanvas({
       .attr("opacity", 0);
 
     // Set up force simulation
-    const simulation = forceSimulation<GraphNode>(graphData.nodes)
-      .force("link", forceLink<GraphNode, any>(graphData.edges)
-        .id((d) => d.id)
-        .distance((d) => {
+    const simulation = forceSimulation(graphData.nodes as any)
+      .force("link", forceLink(graphData.edges as any)
+        .id((d: any) => d.id as string)
+        .distance((d: any) => {
           const sourceRadius = nodeRadius((d.source as GraphNode).type, (d.source as GraphNode).degree);
           const targetRadius = nodeRadius((d.target as GraphNode).type, (d.target as GraphNode).degree);
           return 80 + sourceRadius + targetRadius;
@@ -339,43 +369,43 @@ export function GraphCanvas({
       )
       .force("charge", forceManyBody().strength(-400))
       .force("center", forceCenter(width / 2, height / 2))
-      .force("collision", forceCollide().radius((d) => nodeRadius(d.type, d.degree) + 10))
+      .force("collision", forceCollide().radius((d: any) => nodeRadius((d as GraphNode).type, (d as GraphNode).degree) + 10))
       .alphaDecay(0.02)
       .velocityDecay(0.3);
 
     simulationRef.current = simulation;
 
     // Set up drag behavior
-    const dragBehavior = d3drag<SVGCircleElement, GraphNode>()
-      .on("start", (event, d) => {
+    const dragBehavior = d3drag()
+      .on("start", (event: any, d: GraphNode) => {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
-        select(event.sourceEvent.target).style("cursor", "grabbing");
+        select(event.sourceEvent.target as any).style("cursor", "grabbing");
       })
-      .on("drag", (event, d) => {
+      .on("drag", (event: any, d: GraphNode) => {
         d.fx = event.x;
         d.fy = event.y;
       })
-      .on("end", (event, d) => {
+      .on("end", (event: any, d: GraphNode) => {
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
-        select(event.sourceEvent.target).style("cursor", "grab");
+        select(event.sourceEvent.target as any).style("cursor", "grab");
       });
 
     nodes.call(dragBehavior);
 
     // Set up zoom behavior
-    const zoomBehavior = d3zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = d3zoom()
       .scaleExtent([0.3, 3])
-      .on("zoom", (event) => {
+      .on("zoom", (event: any) => {
         const transform = event.transform;
         transformRef.current = transform;
         mainGroup.attr("transform", transform.toString());
         
         // Update label visibility based on zoom level
-        labels.attr("opacity", (d) => labelVisible(transform.k, d.degree) ? 1 : 0);
+        labels.attr("opacity", (d: GraphNode) => labelVisible(transform.k, d.degree) ? 1 : 0 as any);
       });
 
     svgSelection.call(zoomBehavior);
@@ -389,17 +419,17 @@ export function GraphCanvas({
         .attr("y2", (d: any) => d.target.y);
 
       nodes
-        .attr("cx", (d) => d.x!)
-        .attr("cy", (d) => d.y!);
+        .attr("cx", (d: GraphNode) => d.x!)
+        .attr("cy", (d: GraphNode) => d.y!);
 
       labels
-        .attr("x", (d) => (d.x || 0) + nodeRadius(d.type, d.degree) + 8)
-        .attr("y", (d) => d.y || 0);
+        .attr("x", (d: GraphNode) => (d.x || 0) + nodeRadius(d.type, d.degree) + 8)
+        .attr("y", (d: GraphNode) => d.y || 0);
     });
 
     // Resize observer for responsive behavior
     const resizeObserver = new ResizeObserver((entries) => {
-      clearTimeout(resizeTimeoutRef.current);
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
       resizeTimeoutRef.current = setTimeout(() => {
         for (const entry of entries) {
           const { width: newWidth, height: newHeight } = entry.contentRect;
@@ -414,7 +444,7 @@ export function GraphCanvas({
 
     // Cleanup function
     return () => {
-      clearTimeout(resizeTimeoutRef.current);
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
       resizeObserver.disconnect();
       simulation.stop();
       simulationRef.current = null;
