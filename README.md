@@ -5,6 +5,17 @@
 
 ---
 
+At 3 AM during HackMIT, Jeet Dekivadia, Revanth Reddy, Pratham Pill, and Samuel Wang were working on a problem they’d been discussing for months: why was healthcare tech still stuck in the past? Jeet, who had shadowed doctors, noted how much time physicians spent wrestling with clunky EHRs instead of treating patients. “DrChrono was great for 2009,” he said, “but today’s AI can do much more.”
+
+The idea clicked when Samuel, tired of filling out endless forms, said, “I wish I could just tell this thing what to do.” Instead of doctors adapting to software, what if the software adapted to doctors? That became 0chrono—an AI-native medical assistant built around natural language.
+
+The team combined Next.js and Supabase with Cerebras-powered AI for real-time voice commands, intelligent scheduling, and predictive insights. A doctor could simply say, “Schedule John Doe for a follow-up next week,” and the system would create the appointment, pull labs, flag prescriptions, and adjust schedules automatically.
+
+Unlike older EHRs, 0chrono learns physician preferences, anticipates needs, and provides proactive care insights. In just 36 hours, the team built a working platform showing that the future of healthcare tech isn’t digitizing old workflows but reimagining them with AI at the core.
+
+---
+
+
 ## 🚀 Overview  
 
 Zero Chrono is not just another AI dashboard.  
