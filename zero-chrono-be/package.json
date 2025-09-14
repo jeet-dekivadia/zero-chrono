@@ -7,8 +7,7 @@
   "license": "MIT",
   "scripts": {
     "server": "node server.cjs",
-    "lm-test": "node lm_test.cjs",
-    "biz": "NODE_ENV=development node app-server.cjs"
+    "lm-test": "node lm_test.cjs"
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.50.0",
