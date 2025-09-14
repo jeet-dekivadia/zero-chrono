@@ -1,36 +1,230 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 0chrono - AI-Native Medical Platform
 
-## Getting Started
+**Tagline: "See more patients, not more pages"**
 
-First, run the development server:
+0chrono is a revolutionary AI-native medical platform that transforms how healthcare professionals work through voice-activated assistance and intelligent automation.
 
+## 🤖 Meet Bob - Your AI Medical Assistant
+
+Bob is an advanced AI assistant that processes voice commands to:
+- Update patient records automatically
+- Generate OPD summaries from conversations
+- Schedule appointments and follow-ups
+- Handle emergency service requests
+- Process insurance claims and adjudication
+- Create executive summaries for insurance companies
+
+## ✨ Key Features
+
+### Voice-First Interface
+- Natural language voice commands
+- Real-time speech recognition
+- Intelligent command processing
+- Voice feedback and confirmation
+
+### Patient Management
+- Comprehensive patient profiles
+- Medical history tracking
+- Allergy and medication management
+- Automated OPD summary generation
+
+### Smart Scheduling
+- Voice-activated appointment booking
+- Calendar integration
+- Follow-up reminders
+- Emergency service coordination
+
+### Insurance Integration
+- Automated claim processing
+- Coverage verification
+- Executive summary generation
+- AI-powered adjudication
+
+### Privacy & Security
+- Local conversation processing
+- HIPAA-compliant data handling
+- Secure API communications
+- Privacy-first architecture
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Cerebras API key
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd zero-chrono/zero-chrono-fe
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Configure your environment variables in `.env.local`:
+```env
+CEREBRAS_API_KEY=your_cerebras_api_key_here
+CEREBRAS_BASE_URL=https://api.cerebras.ai/v1
+CEREBRAS_MODEL=llama3.1-8b
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-## Learn More
+5. Run the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+6. Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Usage Examples
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Voice Commands for Bob
 
-## Deploy on Vercel
+**Prescription Management:**
+- "Hey Bob, add paracetamol 500mg twice daily for John Doe"
+- "Prescribe metformin 500mg for patient Sarah with diabetes"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Appointment Scheduling:**
+- "Schedule a follow-up for Michael next Tuesday at 2 PM"
+- "Book Emma for a consultation tomorrow morning"
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Emergency Services:**
+- "Call anesthetics to OR-3 urgently"
+- "Need cardiology support in ICU immediately"
+
+**Insurance Processing:**
+- "Generate insurance claim for today's consultation with John"
+- "Process coverage verification for Sarah's lab tests"
+
+## 🏗️ Architecture
+
+### Frontend (NextJS)
+- React-based user interface
+- Voice recognition integration
+- Real-time dashboard updates
+- Responsive design
+
+### Backend (NextJS API Routes)
+- RESTful API endpoints
+- Cerebras AI integration
+- Voice command processing
+- Data validation and security
+
+### AI Integration
+- Cerebras API for language processing
+- Local conversation analysis
+- Privacy-preserving AI operations
+- Structured data extraction
+
+## 📁 Project Structure
+
+```
+zero-chrono-fe/
+├── src/
+│   ├── app/
+│   │   ├── api/           # API routes
+│   │   ├── landing/       # Landing page
+│   │   └── page.tsx       # Main dashboard
+│   ├── components/
+│   │   ├── ui/            # UI components
+│   │   ├── BobAssistant.tsx
+│   │   ├── EnhancedDashboard.tsx
+│   │   └── ...
+│   └── lib/
+│       ├── cerebras.ts    # AI integration
+│       └── database.ts    # Data schemas
+├── public/                # Static assets
+└── ...
+```
+
+## 🔧 API Endpoints
+
+### Voice Processing
+- `POST /api/voice` - Process voice commands
+- `GET /api/voice-commands` - Get command history
+
+### Patient Management
+- `GET /api/patients` - List patients
+- `POST /api/patients` - Create patient
+- `PUT /api/patients/:id` - Update patient
+
+### OPD Summaries
+- `GET /api/opd-summaries` - Get summaries
+- `POST /api/opd-summaries` - Create summary
+
+### Appointments
+- `GET /api/appointments` - List appointments
+- `POST /api/appointments` - Schedule appointment
+
+### Emergency Services
+- `GET /api/emergency` - List emergency requests
+- `POST /api/emergency` - Create emergency request
+
+### Insurance
+- `GET /api/insurance` - List claims
+- `POST /api/insurance` - Process claim
+
+## 🔒 Security & Privacy
+
+- All patient data is handled according to HIPAA guidelines
+- Voice processing can be done locally for privacy
+- API communications are encrypted
+- Access controls and authentication (to be implemented)
+- Audit logging for all medical actions
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Connect your repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+### Manual Deployment
+```bash
+npm run build
+npm start
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the documentation
+
+## 🔮 Future Roadmap
+
+- [ ] Real database integration
+- [ ] User authentication system
+- [ ] Mobile application
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+- [ ] Integration with hospital systems
+- [ ] Telemedicine features
+- [ ] Advanced AI models
+
+---
+
+**0chrono** - Transforming healthcare through AI-native technology.

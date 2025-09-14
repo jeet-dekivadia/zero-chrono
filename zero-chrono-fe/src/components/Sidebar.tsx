@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "inbox", label: "Clinical Inbox", icon: "📥", badge: 12 },
   { id: "tasks", label: "Tasks", icon: "📋", badge: 4 },
   { id: "patient", label: "Patients", icon: "🏥" },
+  { id: "bob", label: "Bob Assistant", icon: "🤖" },
   { id: "graph", label: "Knowledge Graph", icon: "🕸" },
   { id: "carbon", label: "Analytics", icon: "📊" },
   { id: "logs", label: "System Logs", icon: "📝" },
@@ -65,7 +66,7 @@ export function Sidebar({ current, onChange }: SidebarProps) {
             )}
           </button>
         ))}
-      </nav>s
+      </nav>
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border">
