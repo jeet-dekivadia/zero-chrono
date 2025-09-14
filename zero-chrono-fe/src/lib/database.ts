@@ -1,28 +1,19 @@
 // Database schemas and types for 0chrono medical platform
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client configuration
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_KEY!;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export interface Patient {
-  id: string;
+  id: number;
   name: string;
-  dateOfBirth: Date;
-  gender: 'male' | 'female' | 'other';
-  phone: string;
-  email: string;
-  address: string;
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
-  insuranceInfo: {
-    provider: string;
-    policyNumber: string;
-    groupNumber?: string;
-    planType: string;
-  };
-  allergies: Allergy[];
-  medicalHistory: MedicalHistory[];
-  createdAt: Date;
-  updatedAt: Date;
+  age: number;
+  diagnosis?: string;
+  lab?: string;
+  medications?: string;
+  conditions?: string;
 }
 
 export interface Allergy {
@@ -123,13 +114,11 @@ export interface Appointment {
 export interface Doctor {
   id: string;
   name: string;
-  specialization: string;
-  licenseNumber: string;
   phone: string;
   email: string;
   department: string;
   isOnDuty: boolean;
-  emergencyContact: boolean; // available for emergency calls
+  emergencyContact: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
