@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import dynamic from "next/dynamic";
 
 // make the enhanced dashboard a client component via dynamic import (no SSR flicker)

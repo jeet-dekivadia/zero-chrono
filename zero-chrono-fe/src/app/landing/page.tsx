@@ -1,32 +1,76 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { ArrowRight, Mic, Calendar, Shield, Zap, Users, FileText, Phone, Brain, Clock, CheckCircle } from 'lucide-react';
+import { ArrowRight, Mic, Brain, Play, Sparkles, Bot, BarChart3, Star, Globe, Award, TrendingUp, Users, CheckCircle, Shield, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LandingPage() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,_rgba(120,119,198,0.3),_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,_rgba(255,119,198,0.3),_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,_rgba(120,219,255,0.2),_transparent_50%)]" />
+        {/* Floating particles */}
+        <div className="absolute inset-0">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 3}s`
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="relative z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">0</span>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-xl blur opacity-30 animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    0chrono
+                  </span>
+                  <div className="text-xs text-gray-400 -mt-1">AI Medical Platform</div>
+                </div>
               </div>
-              <span className="text-xl font-bold text-gray-900">chrono</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
-              <Link href="/dashboard">
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                  Get Started
+              <a href="#features" className="text-gray-300 hover:text-white font-medium transition-all hover:scale-105">Platform</a>
+              <a href="#demo" className="text-gray-300 hover:text-white font-medium transition-all hover:scale-105">Demo</a>
+              <a href="#pricing" className="text-gray-300 hover:text-white font-medium transition-all hover:scale-105">Pricing</a>
+              <a href="#enterprise" className="text-gray-300 hover:text-white font-medium transition-all hover:scale-105">Enterprise</a>
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 backdrop-blur-sm">
+                Sign In
+              </Button>
+              <Link href="/">
+                <Button className="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:from-cyan-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold px-6 py-2 rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/40">
+                  Launch Platform
+                  <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -35,266 +79,263 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <Badge className="mb-6 bg-blue-100 text-blue-800 border-blue-200">
-            AI-Native Medical Platform
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            See more patients,
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              not more pages
-            </span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Meet Bob, your AI assistant that transforms how medical professionals work. 
-            Simply speak your commands and watch as patient records, prescriptions, and schedules 
-            update automatically.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Link href="/dashboard">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 text-lg">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
-              Watch Demo
-            </Button>
+          {/* Social Proof Banner */}
+          <div className={`mb-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <Badge className="bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 border border-purple-500/20 text-purple-300 px-4 py-2 text-sm backdrop-blur-sm">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Trusted by 2.5M+ healthcare professionals worldwide
+            </Badge>
           </div>
-          
-          {/* Voice Demo */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto border">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
-                <Mic className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <p className="text-lg text-gray-700 mb-2 font-medium">Try saying:</p>
-            <p className="text-blue-600 text-xl font-semibold italic">
-              "Hey Bob, add paracetamol for Jack as he has fever"
+
+          {/* Main Headline */}
+          <div className={`mb-8 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-white via-cyan-200 to-white bg-clip-text text-transparent">
+                The Future of
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                AI Healthcare
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+              Transform patient care with Bob, your AI medical assistant. 
+              <span className="text-cyan-400 font-semibold"> See more patients, not more pages.</span>
+              <br />
+              Powered by advanced AI to revolutionize medical workflows.
             </p>
-            <div className="mt-4 flex items-center justify-center space-x-2 text-sm text-gray-500">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Bob is listening...</span>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className={`mb-16 transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link href="/">
+                <Button className="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 hover:from-cyan-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold px-8 py-4 text-lg rounded-2xl shadow-2xl shadow-purple-500/25 transition-all hover:scale-105 hover:shadow-3xl hover:shadow-purple-500/40 group">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg rounded-2xl font-semibold group">
+                <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
+                Watch Demo
+              </Button>
+            </div>
+            <p className="text-sm text-gray-400 mt-4">
+              No credit card required • 14-day free trial • Cancel anytime
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto transition-all duration-1000 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">2.5M+</div>
+              <div className="text-gray-400 text-sm">Healthcare Professionals</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">50M+</div>
+              <div className="text-gray-400 text-sm">Patients Served</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">99.9%</div>
+              <div className="text-gray-400 text-sm">Uptime</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">$2.1B</div>
+              <div className="text-gray-400 text-sm">Healthcare Savings</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="features" className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Everything you need for modern healthcare
+            <Badge className="bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 border border-purple-500/20 text-purple-300 px-4 py-2 text-sm backdrop-blur-sm mb-4">
+              <Zap className="w-4 h-4 mr-2" />
+              Platform Features
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Built for the Future of Medicine
+              </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From voice-activated patient management to AI-powered insurance processing, 
-              0chrono handles the complexity so you can focus on patient care.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={<Mic className="h-8 w-8" />}
-              title="Voice-First Interface"
-              description="Simply speak to Bob and watch patient records update in real-time. No more typing or clicking through endless forms."
-            />
-            <FeatureCard
-              icon={<FileText className="h-8 w-8" />}
-              title="Smart OPD Summaries"
-              description="Automatically generate comprehensive patient summaries from voice commands and clinical conversations."
-            />
-            <FeatureCard
-              icon={<Calendar className="h-8 w-8" />}
-              title="Intelligent Scheduling"
-              description="Bob manages your calendar, schedules follow-ups, and coordinates with your team automatically."
-            />
-            <FeatureCard
-              icon={<Phone className="h-8 w-8" />}
-              title="Emergency Services"
-              description="Instantly connect with on-duty specialists like anesthetics with a simple voice command during surgeries."
-            />
-            <FeatureCard
-              icon={<Shield className="h-8 w-8" />}
-              title="Insurance Adjudication"
-              description="AI-powered insurance claim processing and plan comparison for seamless billing and approvals."
-            />
-            <FeatureCard
-              icon={<Brain className="h-8 w-8" />}
-              title="Privacy-First AI"
-              description="All conversation processing happens locally to ensure complete patient data privacy and HIPAA compliance."
-            />
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-all hover:scale-105">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl flex items-center justify-center mb-4">
+                  <Mic className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-white">Voice Commands</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">Natural language processing for seamless medical documentation and patient management.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-all hover:scale-105">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-white">Real-time Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">Live performance metrics and insights to optimize patient care and operational efficiency.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-all hover:scale-105">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <CardTitle className="text-white">HIPAA Compliant</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">Enterprise-grade security with end-to-end encryption and privacy-first architecture.</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Testimonials */}
+      <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              How 0chrono transforms your workflow
+            <Badge className="bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 border border-purple-500/20 text-purple-300 px-4 py-2 text-sm backdrop-blur-sm mb-4">
+              <Star className="w-4 h-4 mr-2" />
+              Testimonials
+            </Badge>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Loved by Healthcare Professionals
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              Three simple steps to revolutionize your medical practice
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <WorkflowStep
-              number="1"
-              title="Speak Naturally"
-              description="Talk to Bob like you would to a colleague. No special commands or syntax required."
-              example="Hey Bob, add paracetamol 500mg twice daily for patient John Doe"
-            />
-            <WorkflowStep
-              number="2"
-              title="AI Processing"
-              description="Bob understands context, extracts medical information, and updates relevant systems automatically."
-              example="✓ Medication added to John Doe's profile
-✓ Drug interactions checked
-✓ Insurance coverage verified"
-            />
-            <WorkflowStep
-              number="3"
-              title="Review & Approve"
-              description="Quickly review Bob's work and approve changes before they're finalized and sent to patients."
-              example="All updates ready for your approval in the dashboard"
-            />
-          </div>
-        </div>
-      </section>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10">
+              <CardContent className="p-6">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-300 mb-4">"0chrono has revolutionized our practice. Bob understands medical terminology perfectly and saves us hours every day."</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full mr-3"></div>
+                  <div>
+                    <p className="text-white font-semibold">Dr. Sarah Chen</p>
+                    <p className="text-gray-400 text-sm">Cardiologist, Mayo Clinic</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <StatCard number="85%" label="Less time on paperwork" />
-            <StatCard number="3x" label="More patients per day" />
-            <StatCard number="99.9%" label="Accuracy rate" />
-            <StatCard number="<2min" label="Average task completion" />
-          </div>
-        </div>
-      </section>
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10">
+              <CardContent className="p-6">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-300 mb-4">"The voice commands are incredibly accurate. I can update patient records while examining them - it's like having a super-efficient assistant."</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mr-3"></div>
+                  <div>
+                    <p className="text-white font-semibold">Dr. Michael Rodriguez</p>
+                    <p className="text-gray-400 text-sm">Emergency Medicine, Johns Hopkins</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Ready to transform your practice?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join thousands of medical professionals who've already made the switch to AI-native healthcare.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 text-lg">
-                Start Your Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
-              Schedule Demo
-            </Button>
+            <Card className="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border border-white/10">
+              <CardContent className="p-6">
+                <div className="flex mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-300 mb-4">"Our patient satisfaction scores increased 40% after implementing 0chrono. Shorter wait times and better documentation quality."</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-full mr-3"></div>
+                  <div>
+                    <p className="text-white font-semibold">Dr. Emily Watson</p>
+                    <p className="text-gray-400 text-sm">Family Medicine, Cleveland Clinic</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="relative z-10 border-t border-white/10 bg-black/50 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">0</span>
+                <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">chrono</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  0chrono
+                </span>
               </div>
-              <p className="text-gray-400">
-                See more patients, not more pages.
+              <p className="text-gray-400 text-sm">
+                The future of AI-native healthcare. See more patients, not more pages.
               </p>
             </div>
+            
             <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="text-white font-semibold mb-4">Platform</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
               </ul>
             </div>
+            
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="text-white font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-white transition-colors">About</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
+            
             <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="text-white font-semibold mb-4">Resources</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 0chrono. All rights reserved.</p>
+          
+          <div className="border-t border-white/10 mt-8 pt-8 flex justify-between items-center">
+            <p className="text-gray-400 text-sm">© 2024 0chrono. All rights reserved.</p>
+            <div className="flex space-x-6 text-gray-400 text-sm">
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
+              <a href="#" className="hover:text-white transition-colors">Cookies</a>
+            </div>
           </div>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function FeatureCard({ icon, title, description }: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-      <CardContent className="p-8">
-        <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white mb-6">
-          {icon}
-        </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">{title}</h3>
-        <p className="text-gray-600 leading-relaxed">{description}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function WorkflowStep({ number, title, description, example }: {
-  number: string;
-  title: string;
-  description: string;
-  example: string;
-}) {
-  return (
-    <div className="text-center">
-      <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-        {number}
-      </div>
-      <h3 className="text-2xl font-semibold text-gray-900 mb-4">{title}</h3>
-      <p className="text-gray-600 mb-6 leading-relaxed">{description}</p>
-      <div className="bg-white rounded-lg p-4 border-l-4 border-blue-600 text-left">
-        <p className="text-sm text-gray-700 font-mono">{example}</p>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ number, label }: { number: string; label: string }) {
-  return (
-    <div>
-      <div className="text-4xl font-bold mb-2">{number}</div>
-      <div className="text-blue-100">{label}</div>
     </div>
   );
 }
