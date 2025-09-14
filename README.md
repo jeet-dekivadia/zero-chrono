@@ -18,6 +18,14 @@ It is a **graph-native reasoning engine** for healthcare:
 
 ---
 
+> ⚠️ **Why Zero Chrono?**  
+> The legacy **DrChrono platform** is built on rigid, form-driven EHR systems that drown clinicians in clicks and fragmented workflows.  
+> **Zero Chrono kills that paradigm** — replacing page-heavy interfaces with a **knowledge-graph powered, AI-first orchestration layer**.  
+> Instead of managing forms, doctors manage patients — with context-aware automation, real-time reasoning, and carbon-conscious AI at the core.
+
+---
+
+
 ## 🏗️ Architecture  
 
 
