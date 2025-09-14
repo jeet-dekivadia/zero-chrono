@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const CerebrasImport = require("@cerebras/cerebras_cloud_sdk");
 const Cerebras = CerebrasImport && CerebrasImport.default ? CerebrasImport.default : CerebrasImport;
+const { queryGraphContext } = require("./graph_rag.cjs");
 const { parse } = require("csv-parse/sync");
 
 // ---------------- Config (Cerebras API) ----------------
@@ -53,6 +54,7 @@ function safeJsonLoads(text) {
   try {
     return JSON.parse(text);
   } catch (e) {
+    console.error("[DEBUG] Failed to parse JSON:", e);
     const objMatch = String(text).match(/\{[\s\S]*\}/);
     if (objMatch) {
       try { return JSON.parse(objMatch[0]); } catch (_) {}
@@ -377,40 +379,18 @@ async function autobuildGraph(repoRootDir) {
       const respOutPath = path.join(repoRootDir, "linker_response.txt");
       fs.writeFileSync(respOutPath, String(content != null ? content : ""), { encoding: "utf-8" });
     } catch (_) {}
+
     const data = safeJsonLoads(content);
-    if (data && typeof data === "object" && !Array.isArray(data)) {
-      links = Array.isArray(data.Links) ? data.Links : [];
-    }
+    links = data.Links;
+    try {
+      const linksOutPath = path.join(repoRootDir, "links_processed.json");
+      fs.writeFileSync(linksOutPath, JSON.stringify(links, null, 2), { encoding: "utf-8" });
+    } catch (_) {}
+
   } catch (err) {
     console.error("[DEBUG] Links generation error:", err);
     console.log("[DEBUG] Links generation failed");
     links = [];
-  }
-
-  // Second-pass refinement: critique and improve initial links, keep JSON-only output
-  if (Array.isArray(links) && links.length > 0) {
-    try {
-      const critiquePrompt = [
-        "You are reviewing a clinical graph's proposed links.",
-        "- Remove duplicates or trivial self-links.",
-        "- Ensure each link has correct source_type/target_type.",
-        "- Add missing but obvious links if any.",
-        "- Improve descriptions to be concise and clinically grounded.",
-        "- Output strictly valid JSON: {\"Links\": [ ... ]} with the same schema.",
-        "- No extra commentary.",
-        "\nExisting links:",
-        JSON.stringify({ Links: links }, null, 2),
-      ].join("\n");
-      const { content: improved } = await generateCompletionForLinks({ promptText: critiquePrompt });
-      try {
-        const respRefinedPath = path.join(repoRootDir, "linker_response_refined.txt");
-        fs.writeFileSync(respRefinedPath, String(improved != null ? improved : ""), { encoding: "utf-8" });
-      } catch (_) {}
-      const refined = safeJsonLoads(improved);
-      if (refined && typeof refined === "object" && Array.isArray(refined.Links)) {
-        links = refined.Links;
-      }
-    } catch (_) {}
   }
 
   // Normalize links to ensure compatibility with prompt variations
@@ -483,7 +463,7 @@ app.get("/graph", async (req, res) => {
       data = JSON.parse(fs.readFileSync(graphPath, { encoding: "utf-8" }));
     }
     console.log("[DEBUG] Graph links:", data.Links);
-    const links = Array.isArray(data.Links) ? data.Links : [];
+    const links = data.Links;
     const rawNodes = Array.isArray(data.Nodes) ? data.Nodes : [];
     const labelToNode = new Map();
     try {
@@ -551,6 +531,71 @@ app.get("/graph", async (req, res) => {
     return res.status(200).json({ nodes: Array.from(nodesMap.values()), edges });
   } catch (err) {
     return res.status(500).json({ nodes: [], edges: [], error: String(err && err.message ? err.message : err) });
+  }
+});
+
+// ---------------- Graph RAG (Neo4j + LLM) endpoint ----------------
+function resolveNeo4jCreds() {
+  const uriEnv = process.env.NEO4J_URI || "bolt://localhost:7687";
+  let user = process.env.NEO4J_USER || "neo4j";
+  let password = process.env.NEO4J_PASSWORD || "";
+  if (!password && process.env.NEO4J_AUTH) {
+    const auth = String(process.env.NEO4J_AUTH);
+    const sep = auth.includes(":") ? ":" : "/";
+    const parts = auth.split(sep);
+    if (parts.length >= 2) {
+      if (!user) user = parts[0];
+      password = parts.slice(1).join(sep);
+    }
+  }
+  if (!password) {
+    const m = uriEnv.match(/^bolt:\/\/([^:@]+):([^@]+)@(.+)$/);
+    if (m) {
+      user = m[1];
+      password = m[2];
+    }
+  }
+  // Strip credentials from URI if present
+  const sanitizedUri = uriEnv.replace(/^bolt:\/\/[^@]+@/, "bolt://");
+  return { uri: sanitizedUri, user, password };
+}
+
+app.post("/graph-rag", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const question = String(body.question || body.query || "").trim();
+    if (!question) return res.status(400).json({ error: "Missing 'question' in request body." });
+    const topK = Number(body.top_k != null ? body.top_k : 6);
+    const neighborK = Number(body.neighbor_k != null ? body.neighbor_k : 4);
+    const includeTypes = Array.isArray(body.include_types) ? body.include_types : null;
+
+    const { uri, user, password } = resolveNeo4jCreds();
+    if (!user || !password) return res.status(400).json({ error: "Neo4j credentials not provided. Set NEO4J_USER/NEO4J_PASSWORD or NEO4J_AUTH." });
+
+    const { topNodes, neighborRows, context } = await queryGraphContext({
+      uri,
+      user,
+      password,
+      question,
+      topK,
+      neighborK,
+      includeTypes,
+    });
+
+    const systemPrompt = "You are a clinical assistant. Use the provided graph context consisting of relevant nodes and their relationships to answer the question accurately. Cite node titles when applicable.";
+    const userContent = `Question:\n${question}\n\nGraph Context:\n${context}\n\nAnswer concisely.`;
+    const { content, modelUsed } = await generateCompletionLM({ promptText: [systemPrompt, userContent].join("\n\n") });
+
+    return res.status(200).json({
+      question,
+      answer: content,
+      model: modelUsed,
+      context,
+      top_nodes: topNodes,
+      neighbors: neighborRows,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: String(err && err.message ? err.message : err) });
   }
 });
 

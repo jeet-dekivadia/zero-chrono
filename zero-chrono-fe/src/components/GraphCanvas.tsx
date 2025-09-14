@@ -68,59 +68,6 @@ export interface GraphData {
   edges: GraphEdge[];
 }
 
-/* -------------------- Mock Data (safe to swap later) -------------------- */
-
-const DEFAULT_DATA: GraphData = {
-  nodes: [
-    { id: "patient:jonathan", type: "Patient", label: "Jonathan" },
-    { id: "drug:cymbalta", type: "Drug", label: "Cymbalta" },
-    { id: "drug:atorvastatin", type: "Drug", label: "Atorvastatin" },
-    { id: "cond:neuralgia", type: "Condition", label: "Neuralgia" },
-    { id: "appt:2025-09-14-14", type: "Appointment", label: "14:00 • Sep 14" },
-    { id: "cond:afib", type: "Condition", label: "Atrial Fibrillation" },
-    { id: "guide:afib-2025", type: "Guideline", label: "AFib Guideline 2025" },
-  ],
-  edges: [
-    {
-      source: "patient:jonathan",
-      target: "cond:neuralgia",
-      type: "has_condition",
-      confidence: 0.9,
-    },
-    {
-      source: "patient:jonathan",
-      target: "drug:atorvastatin",
-      type: "prescribed",
-      confidence: 0.95,
-    },
-    {
-      source: "patient:jonathan",
-      target: "drug:cymbalta",
-      type: "prescribed",
-      confidence: 0.92,
-    },
-    {
-      source: "drug:cymbalta",
-      target: "drug:atorvastatin",
-      type: "interacts_with",
-      severity: "medium",
-      confidence: 0.7,
-    },
-    {
-      source: "patient:jonathan",
-      target: "appt:2025-09-14-14",
-      type: "has_appointment",
-      confidence: 0.88,
-    },
-    {
-      source: "cond:afib",
-      target: "guide:afib-2025",
-      type: "guideline",
-      confidence: 0.85,
-    },
-  ],
-};
-
 /* -------------------- Visual helpers -------------------- */
 
 function nodeColor(t: NodeType) {
@@ -167,7 +114,7 @@ function labelVisible(zoomK: number, degree = 0) {
 /* -------------------- Component -------------------- */
 
 export function GraphCanvas({
-  data = DEFAULT_DATA,
+  data,
   onSelect,
 }: {
   data?: GraphData;
@@ -179,6 +126,10 @@ export function GraphCanvas({
     x: number;
     y: number;
   } | null>(null);
+  const [queryText, setQueryText] = React.useState("");
+  const [ragLoading, setRagLoading] = React.useState(false);
+  const [ragAnswer, setRagAnswer] = React.useState<string | null>(null);
+  const [ragError, setRagError] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const svgRef = React.useRef<SVGSVGElement>(null);
   const simulationRef = React.useRef<ReturnType<typeof forceSimulation> | null>(null);
@@ -186,7 +137,7 @@ export function GraphCanvas({
   
   // Stable graph data to prevent unnecessary re-renders
   const graphData = React.useMemo(() => {
-    const effective = serverData ?? data;
+    const effective = serverData ?? data ?? { nodes: [], edges: [] };
     const degreeMap: Record<string, number> = {};
     effective.edges.forEach((e) => {
       degreeMap[e.source] = (degreeMap[e.source] || 0) + 1;
@@ -229,6 +180,42 @@ export function GraphCanvas({
       controller.abort();
     };
   }, []);
+
+  // GraphRAG query submit
+  const runGraphRag = React.useCallback(async () => {
+    const q = queryText.trim();
+    if (!q || ragLoading) return;
+    setRagAnswer(null);
+    setRagError(null);
+    setRagLoading(true);
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const resp = await fetch(`${base}/graph-rag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, top_k: 6, neighbor_k: 4 }),
+      });
+      const ct = resp.headers.get("content-type") || "";
+      const raw = await resp.text();
+      let data: any = null;
+      if (ct.includes("application/json")) {
+        try { data = JSON.parse(raw); } catch (_) {}
+      }
+      if (!resp.ok) {
+        const msg = data && data.error ? String(data.error) : raw ? String(raw).slice(0, 300) : `status ${resp.status}`;
+        throw new Error(msg);
+      }
+      if (data && data.answer != null) {
+        setRagAnswer(String(data.answer));
+      } else {
+        setRagAnswer(raw);
+      }
+    } catch (e: any) {
+      setRagError(String(e && e.message ? e.message : e));
+    } finally {
+      setRagLoading(false);
+    }
+  }, [queryText, ragLoading]);
 
   // Debounced resize handler
   const resizeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -477,6 +464,36 @@ export function GraphCanvas({
         contain: "layout style paint"
       }}
     >
+      {/* Query bar */}
+      <div className="absolute inset-x-0 top-0 z-20 p-3">
+        <div className="flex items-center gap-2 rounded-lg border border-zinc-200/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/80">
+          <input
+            type="text"
+            value={queryText}
+            onChange={(e) => setQueryText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") runGraphRag(); }}
+            placeholder="Ask a question about this graph..."
+            className="flex-1 bg-transparent outline-none text-sm text-zinc-900 placeholder-zinc-400 dark:text-zinc-100"
+            aria-label="Ask a question about this graph"
+          />
+          <button
+            onClick={runGraphRag}
+            disabled={ragLoading || !queryText.trim()}
+            className="inline-flex items-center gap-1 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          >
+            {ragLoading ? "Thinking..." : "Ask"}
+          </button>
+        </div>
+        {(ragAnswer || ragError) && (
+          <div className="mt-2 max-h-40 overflow-auto rounded-lg border border-zinc-200/70 bg-white/90 p-3 text-sm leading-relaxed text-zinc-800 shadow-sm backdrop-blur dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:text-zinc-200">
+            {ragError ? (
+              <div className="text-red-600 dark:text-red-400">{ragError}</div>
+            ) : (
+              <div style={{ whiteSpace: "pre-wrap" }}>{ragAnswer}</div>
+            )}
+          </div>
+        )}
+      </div>
       <svg
         ref={svgRef}
         className="w-full h-full"
