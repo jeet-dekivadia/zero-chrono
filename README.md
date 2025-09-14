@@ -1,7 +1,7 @@
 # ⏱️ Zero Chrono — Knowledge-Graph Powered Medical AI Platform  
 
 > **“See more patients, not more pages.”**  
-> A next-gen healthcare orchestration system built on **GraphRAG** (Graph-based Retrieval Augmented Generation), seamlessly integrating **doctor–patient workflows, clinical protocols, and real-time EHR streams** into a unified AI-driven assistant.  
+> A next-gen healthcare orchestration system built on **GraphRAG** (Graph-based Retrieval Augmented Generation), seamlessly integrating **doctor–patient workflows, clinical protocols, and real-time EHR streams** into a canvas.  
 
 ---
 
