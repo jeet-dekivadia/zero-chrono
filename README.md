@@ -72,19 +72,7 @@ Traditional RAG = flat text retrieval.
 - **Precision:** No more prompt-stuffing; retrieval follows relational edges.  
 - **Safety:** Graph-grounding minimizes hallucination in high-stakes environments.  
 - **Efficiency:** Subgraph pruning reduces tokens + energy overhead.  
-- **Scalability:** Graph grows with every interaction, unlocking **population-level insights**.  
-
----
-
-## 📸 Screenshots  
-
-| Dashboard | Clinical Tasks | Patients |  
-|-----------|----------------|----------|  
-| ![Dashboard](assets/dashboard.png) | ![Tasks](assets/tasks.png) | ![Patients](assets/patients.png) |  
-
-| Bob Assistant | Knowledge Graph | Analytics |  
-|---------------|-----------------|-----------|  
-| ![Bob](assets/bob.png) | ![KG](assets/knowledge-graph.png) | ![Analytics](assets/analytics.png) |  
+- **Scalability:** Graph grows with every interaction, unlocking **population-level insights**.
 
 ---
 
